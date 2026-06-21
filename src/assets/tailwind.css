@@ -1,0 +1,183 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* ----------------------------------------------------------------------
+   Design tokens — all colors live here as CSS variables (OKLCH).
+   Components never reference raw hex; they use bg-background,
+   text-muted-foreground, border-border, etc.
+   ---------------------------------------------------------------------- */
+@theme inline {
+  --font-sans:
+    'Outfit', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* File-type semantic colors */
+  --color-folder: var(--folder);
+  --color-image: var(--image);
+  --color-video: var(--video);
+  --color-audio: var(--audio);
+  --color-document: var(--document);
+  --color-code: var(--code);
+  --color-archive: var(--archive);
+}
+
+:root {
+  --radius: 0.65rem;
+
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+
+  /* File-type semantic tokens (light) */
+  --folder: oklch(0.62 0.18 255);
+  --image: oklch(0.65 0.18 150);
+  --video: oklch(0.6 0.2 295);
+  --audio: oklch(0.7 0.18 60);
+  --document: oklch(0.62 0.22 25);
+  --code: oklch(0.65 0.15 220);
+  --archive: oklch(0.75 0.15 85);
+
+  /* Soft surface tints (10% chroma) used for type badge backgrounds */
+  --folder-soft: oklch(0.97 0.03 255);
+  --image-soft: oklch(0.97 0.03 150);
+  --video-soft: oklch(0.97 0.03 295);
+  --audio-soft: oklch(0.97 0.03 60);
+  --document-soft: oklch(0.97 0.03 25);
+  --code-soft: oklch(0.97 0.03 220);
+  --archive-soft: oklch(0.97 0.03 85);
+
+  --folder-border: oklch(0.9 0.04 255);
+  --image-border: oklch(0.9 0.04 150);
+  --video-border: oklch(0.9 0.04 295);
+  --audio-border: oklch(0.9 0.04 60);
+  --document-border: oklch(0.9 0.04 25);
+  --code-border: oklch(0.9 0.04 220);
+  --archive-border: oklch(0.9 0.04 85);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.556 0 0);
+
+  --folder: oklch(0.7 0.18 255);
+  --image: oklch(0.72 0.18 150);
+  --video: oklch(0.7 0.2 295);
+  --audio: oklch(0.75 0.18 60);
+  --document: oklch(0.72 0.22 25);
+  --code: oklch(0.72 0.15 220);
+  --archive: oklch(0.8 0.15 85);
+
+  --folder-soft: oklch(0.25 0.06 255);
+  --image-soft: oklch(0.25 0.06 150);
+  --video-soft: oklch(0.25 0.06 295);
+  --audio-soft: oklch(0.25 0.06 60);
+  --document-soft: oklch(0.25 0.06 25);
+  --code-soft: oklch(0.25 0.06 220);
+  --archive-soft: oklch(0.25 0.06 85);
+
+  --folder-border: oklch(0.35 0.08 255);
+  --image-border: oklch(0.35 0.08 150);
+  --video-border: oklch(0.35 0.08 295);
+  --audio-border: oklch(0.35 0.08 60);
+  --document-border: oklch(0.35 0.08 25);
+  --code-border: oklch(0.35 0.08 220);
+  --archive-border: oklch(0.35 0.08 85);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html,
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    background: var(--background);
+    color: var(--foreground);
+  }
+}
+
+/* Scrollbar — themed, slim, neutral */
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 9999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
+  }
+}
