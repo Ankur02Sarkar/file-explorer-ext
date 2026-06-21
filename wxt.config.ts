@@ -12,6 +12,9 @@ export default defineConfig({
       'Transform local folders and directory listings into a powerful file browser with search, filters, previews & shortcuts.',
     permissions: ['storage', 'activeTab', 'scripting'],
     host_permissions: ['file://*/*'],
+    action: {
+      default_title: 'File Explorer',
+    },
     commands: {
       _execute_action: {
         suggested_key: {

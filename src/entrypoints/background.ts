@@ -1,35 +1,73 @@
 export default defineBackground(() => {
-  // Inject the content script on demand when the user clicks the action or
-  // uses the keyboard shortcut. The content script itself handles auto-mount
-  // on file:// pages, so the service worker only needs to ensure it can
-  // re-trigger if needed (e.g. after a tab was closed without unmount).
-  browser.action?.onClicked.addListener(async (tab) => {
-    if (!tab.id) return;
+  const SCRIPT_PATH = '/files-explorer.js';
+
+  const isFilePage = (url?: string) =>
+    !!url && url.startsWith('file://') && url.endsWith('/');
+
+  const inject = async (tabId: number) => {
     try {
       await browser.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ['/content-scripts/content.js'],
+        target: { tabId },
+        files: [SCRIPT_PATH],
+        world: 'ISOLATED',
       });
     } catch (err) {
-      console.warn('[files-explorer] executeScript failed:', err);
+      console.warn('[files-explorer] inject failed:', err);
     }
+  };
+
+  const focusHost = async (tabId: number) => {
+    try {
+      await browser.scripting.executeScript({
+        target: { tabId },
+        func: () => {
+          const host = document.getElementById('files-explorer-host');
+          if (host instanceof HTMLElement) {
+            host.scrollIntoView({ block: 'start', behavior: 'smooth' });
+            return true;
+          }
+          return false;
+        },
+      });
+    } catch (err) {
+      console.warn('[files-explorer] focus failed:', err);
+    }
+  };
+
+  // Auto-inject on file:// tab navigations.
+  browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    if (changeInfo.status !== 'complete') return;
+    if (!isFilePage(tab.url)) return;
+    void inject(tabId);
   });
 
-  // Optional: open the help page in a new tab via Alt+Shift+F if the action
-  // button isn't directly accessible.
-  browser.commands?.onCommand.addListener(async (command) => {
-    if (command === '_execute_action') {
-      const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-      if (tab?.id) {
-        try {
-          await browser.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: ['/content-scripts/content.js'],
-          });
-        } catch (err) {
-          console.warn('[files-explorer] command executeScript failed:', err);
-        }
-      }
+  // Action button click → focus existing host, or inject if missing.
+  browser.action?.onClicked.addListener(async (tab) => {
+    if (!tab?.id) return;
+    if (!isFilePage(tab.url)) {
+      // Not on a file:// page — open the help page instead.
+      await browser.tabs.create({
+        url: browser.runtime.getURL('/file-access-help.html'),
+      });
+      return;
     }
+    await focusHost(tab.id);
+    // Also (re)inject in case the script hasn't run yet.
+    await inject(tab.id);
+  });
+
+  // Keyboard shortcut → same as action.
+  browser.commands?.onCommand.addListener(async (command) => {
+    if (command !== '_execute_action') return;
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.id) return;
+    if (!isFilePage(tab.url)) {
+      await browser.tabs.create({
+        url: browser.runtime.getURL('/file-access-help.html'),
+      });
+      return;
+    }
+    await focusHost(tab.id);
+    await inject(tab.id);
   });
 });

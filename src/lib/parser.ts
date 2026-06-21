@@ -164,6 +164,21 @@ function parseHeaderRow(row: HTMLTableRowElement): Record<number, string> {
   return mapping;
 }
 
+/**
+ * When no <thead> is present and the first row has no useful text, guess
+ * the column order from the cell count. Most native file:// listings use:
+ *   col 0 → name (with anchor), col 1 → size, col 2 → modified, col 3 → blank
+ */
+function inferColumnOrder(row: HTMLTableRowElement): Record<number, string> {
+  const cells = row.children;
+  const mapping: Record<number, string> = {};
+  if (cells.length >= 1) mapping[0] = 'name';
+  if (cells.length >= 2) mapping[1] = 'size';
+  if (cells.length >= 3) mapping[2] = 'modified';
+  if (cells.length >= 4) mapping[3] = 'description';
+  return mapping;
+}
+
 function parseBodyRow(
   row: HTMLTableRowElement,
   headerMap: Record<number, string>,
@@ -194,10 +209,28 @@ export function parseDirectoryListing(): ExplorerItem[] {
   const items: ExplorerItem[] = [];
 
   if (table) {
-    const rows = Array.from(table.querySelectorAll('tr'));
+    // Try <thead> first (Apache/Nginx listings), else first row.
+    const headRow =
+      table.querySelector('thead tr') ?? table.querySelector('tr');
+    const bodyRows = Array.from(table.querySelectorAll('tbody tr'));
+    const allRows = Array.from(table.querySelectorAll('tr'));
+    const rows = bodyRows.length > 0 ? bodyRows : allRows;
+
     if (rows.length === 0) return [];
-    const headerMap = parseHeaderRow(rows[0]);
-    for (let i = 1; i < rows.length; i++) {
+
+    let headerMap = headRow
+      ? parseHeaderRow(headRow)
+      : ({} as Record<number, string>);
+
+    // Heuristic: Chrome's native file:// listing has an empty header row
+    // but consistent column order: [name, size, modified]. Detect by
+    // looking at the first body row's cell count + content.
+    if (Object.keys(headerMap).length === 0) {
+      headerMap = inferColumnOrder(rows[0]);
+    }
+
+    const startIdx = headRow && !bodyRows.length ? 1 : 0;
+    for (let i = startIdx; i < rows.length; i++) {
       const parsed = parseBodyRow(rows[i], headerMap, baseHref);
       if (parsed) items.push(parsed);
     }
