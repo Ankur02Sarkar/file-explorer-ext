@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { storage } from 'wxt/storage';
+import { storage } from 'wxt/utils/storage';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 

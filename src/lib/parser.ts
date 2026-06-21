@@ -125,7 +125,7 @@ function stripExt(name: string, ext: string | undefined): string {
 }
 
 /** Read a link and turn it into a partial ExplorerItem (no size/modified yet). */
-function readAnchor(anchor: HTMLAnchorElement, baseHref: string): ExplorerItem {
+function readAnchor(anchor: HTMLAnchorElement | HTMLAreaElement, baseHref: string): ExplorerItem {
   const t: ExplorerItem = {
     name: '',
     href: '',

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { storage } from 'wxt/storage';
+import { storage } from 'wxt/utils/storage';
 
 /**
  * State that persists to chrome.storage.local via WXT's typed storage API.
