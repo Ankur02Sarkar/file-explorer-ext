@@ -10,6 +10,7 @@
   },
   "include": [
     "src/**/*",
+    ".wxt/**/*.d.ts",
     "components.json"
   ]
 }
