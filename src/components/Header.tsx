@@ -23,12 +23,18 @@ interface HeaderProps {
 }
 
 export function Header({ segments, onShowShortcuts, onDismiss }: HeaderProps) {
-  // Build breadcrumbs: Home + each segment.
+  // Build breadcrumbs: Home + each segment. The first segment gets the
+  // full first-level directory URL; deeper segments are clickable.
+  const baseHref =
+    typeof window !== 'undefined'
+      ? new URL(window.location.href).origin
+      : '';
   const crumbs = [
-    { name: 'Home', href: segments.length ? segments[0] : '/', isHome: true },
+    { name: 'Home', href: baseHref + '/', isHome: true },
     ...segments.map((seg, i) => ({
       name: seg,
-      href: '/' + segments.slice(0, i + 1).join('/'),
+      href:
+        baseHref + '/' + segments.slice(0, i + 1).join('/') + (i < segments.length - 1 ? '/' : ''),
       isHome: false,
     })),
   ];
