@@ -1,4 +1,4 @@
-import { Home } from 'lucide-react';
+import { Home, Keyboard, X } from 'lucide-react';
 
 import {
   Breadcrumb,
@@ -9,10 +9,12 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
-import { KeyboardIcon } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { ThemeToggle } from './ThemeToggle';
-import { X } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface HeaderProps {
   segments: string[];
@@ -49,7 +51,7 @@ export function Header({ segments, onShowShortcuts, onDismiss }: HeaderProps) {
                       <BreadcrumbLink asChild>
                         <a
                           href={crumb.href}
-                          className="hover:text-foreground transition-colors inline-flex items-center gap-1"
+                          className="hover:text-foreground inline-flex items-center gap-1 transition-colors"
                         >
                           {crumb.isHome && <Home className="size-3.5" />}
                           {crumb.name}
@@ -73,7 +75,7 @@ export function Header({ segments, onShowShortcuts, onDismiss }: HeaderProps) {
                 onClick={onShowShortcuts}
                 aria-label="Keyboard shortcuts"
               >
-                <KeyboardIcon className="size-4" />
+                <Keyboard className="size-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Keyboard shortcuts (Shift + ?)</TooltipContent>
