@@ -15,14 +15,19 @@ export function FileCard({ item }: FileCardProps) {
   const badge = describeType(item);
   const Icon = resolveFileIcon(item);
 
-  const openIfMedia = () => {
-    if (item.fileType) setSelectedItem(item);
-    else window.location.href = item.href;
+  // Click anywhere on the card to open a preview. Folders navigate
+  // straight to the directory instead of opening a preview dialog.
+  const onCardClick = () => {
+    if (item.type === 'directory') {
+      window.location.href = item.href;
+      return;
+    }
+    setSelectedItem(item);
   };
 
   return (
     <div className="bg-background hover:border-primary/50 group flex flex-col overflow-hidden rounded-lg border border-border transition-all duration-200 hover:scale-[1.02] hover:shadow-lg">
-      <div className="relative cursor-pointer p-4" onClick={openIfMedia}>
+      <div className="relative cursor-pointer p-4" onClick={onCardClick}>
         {item.fileType === 'image' ? (
           thumbnails.images ? (
             <div className="bg-muted/20 relative overflow-hidden rounded-md">
@@ -105,24 +110,34 @@ export function FileCard({ item }: FileCardProps) {
       <div className="flex flex-1 flex-col gap-2 border-t border-border p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <a
-              href={item.href}
-              className="hover:text-primary block truncate font-medium transition-colors"
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCardClick();
+              }}
+              className="hover:text-primary block w-full truncate text-left font-medium transition-colors"
               title={item.name}
             >
               {item.name}
-            </a>
+            </button>
             {item.ext && (
-              <span className="text-xs text-muted-foreground">.{item.ext}</span>
+              <span className="text-muted-foreground text-xs">.{item.ext}</span>
             )}
           </div>
           {item.type === 'file' && (
             <a
               href={item.href}
               download
+              onClick={(e) => e.stopPropagation()}
               className="opacity-0 transition-opacity group-hover:opacity-100"
             >
-              <Button size="icon" variant="ghost" className="size-8" title="Download">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-8"
+                title="Download"
+              >
                 <Download className="size-4" />
               </Button>
             </a>
@@ -155,24 +170,36 @@ export function FileRow({ item }: { item: ExplorerItem }) {
   const badge = describeType(item);
   const Icon = resolveFileIcon(item);
 
-  const openIfMedia = () => {
-    if (item.fileType) setSelectedItem(item);
+  const onRowClick = () => {
+    if (item.type === 'directory') {
+      window.location.href = item.href;
+      return;
+    }
+    setSelectedItem(item);
   };
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      onClick={onRowClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onRowClick();
+        }
+      }}
       className={cn(
-        'group hover:bg-muted/50 hover:border-primary/50 grid grid-cols-[48px_1fr_auto_120px] items-center gap-4 rounded-lg border border-border px-4 py-3 transition-all duration-200 hover:shadow-md',
+        'group hover:bg-muted/50 hover:border-primary/50 grid cursor-pointer grid-cols-[48px_1fr_auto_120px] items-center gap-4 rounded-lg border border-border px-4 py-3 transition-all duration-200 hover:shadow-md',
         badge.border,
       )}
     >
       <div
         className={cn(
-          'flex size-12 items-center justify-center rounded-lg',
+          'flex size-12 cursor-pointer items-center justify-center rounded-lg',
           badge.bg,
-          item.fileType && 'cursor-pointer',
         )}
-        onClick={openIfMedia}
+        onClick={onRowClick}
       >
         {item.fileType === 'image' && thumbnails.images ? (
           <div className="size-full overflow-hidden rounded-lg">
@@ -189,13 +216,17 @@ export function FileRow({ item }: { item: ExplorerItem }) {
       </div>
 
       <div className="flex min-w-0 flex-col gap-1">
-        <a
-          href={item.href}
-          className="hover:text-primary truncate font-medium transition-colors"
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRowClick();
+          }}
+          className="hover:text-primary truncate text-left font-medium transition-colors"
           title={item.name}
         >
           {item.name}
-        </a>
+        </button>
         <div className="text-muted-foreground flex items-center gap-3 text-xs">
           <span
             className={cn(
@@ -225,9 +256,16 @@ export function FileRow({ item }: { item: ExplorerItem }) {
           <a
             href={item.href}
             download
+            onClick={(e) => e.stopPropagation()}
             className="opacity-0 transition-opacity group-hover:opacity-100"
           >
-            <Button variant="ghost" size="icon" className="size-9" title="Download">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-9"
+              title="Download"
+              asChild={false}
+            >
               <Download className="size-4" />
             </Button>
           </a>
