@@ -5,6 +5,7 @@ import tailwindCss from '@/assets/tailwind.css?inline';
 import { Home } from '@/components/Home';
 import { ThemeProvider } from '@/hooks/useTheme';
 import { ExplorerProvider } from '@/contexts/ExplorerContext';
+import { ShadowPortalProvider } from '@/lib/shadow-portal';
 
 export default defineUnlistedScript(() => {
   // Bail at runtime if not on a file:// URL or if this isn't a directory.
@@ -32,16 +33,17 @@ function mountShadowRoot() {
 
   const host = document.createElement('div');
   host.id = 'files-explorer-host';
+  // Position only. We deliberately do NOT set `background` here — the
+  // React app's outermost <div className="bg-background …"> provides the
+  // surface color. We also avoid `all: initial` because the shorthand
+  // fight with subsequent longhands in cssText and can leave the host
+  // sized to zero. Tailwind's preflight (loaded into the shadow root)
+  // handles cross-page style isolation.
   host.style.cssText =
-    'all: initial; contain: layout style; display: block; position: fixed; inset: 0; z-index: 2147483647; background: var(--background, #fff);';
+    'contain: layout style; display: block; position: fixed; inset: 0; z-index: 2147483647;';
   document.body.appendChild(host);
 
   const shadow = host.attachShadow({ mode: 'open' });
-
-  // Reset body so the host page CSS doesn't bleed into the shadow root.
-  const reset = document.createElement('style');
-  reset.textContent = ':host { all: initial; } :host > * { all: revert; }';
-  shadow.appendChild(reset);
 
   // Inject the Tailwind CSS directly into the shadow root as a <style>
   // tag. Tailwind v4 + @tailwindcss/vite processes the CSS before
@@ -64,23 +66,36 @@ function mountShadowRoot() {
   });
   observer.observe(document.body, { childList: true });
 
+  // Main React mount target.
   const container = document.createElement('div');
   container.className = 'files-explorer-root';
   container.style.cssText = 'width: 100%; height: 100vh;';
   shadow.appendChild(container);
 
+  // Portal target for Radix Dialog / Tooltip / DropdownMenu. It lives
+  // inside the shadow root so portaled nodes inherit our Tailwind
+  // styles instead of being rendered into document.body unstyled.
+  const portalRoot = document.createElement('div');
+  portalRoot.id = 'files-explorer-portal-root';
+  portalRoot.style.cssText = 'position: relative; z-index: 2147483647;';
+  shadow.appendChild(portalRoot);
+
   const root = ReactDOM.createRoot(container);
   root.render(
     React.createElement(
-      React.StrictMode,
-      null,
+      ShadowPortalProvider,
+      { value: portalRoot },
       React.createElement(
-        ThemeProvider,
+        React.StrictMode,
         null,
         React.createElement(
-          ExplorerProvider,
+          ThemeProvider,
           null,
-          React.createElement(Home),
+          React.createElement(
+            ExplorerProvider,
+            null,
+            React.createElement(Home),
+          ),
         ),
       ),
     ),
