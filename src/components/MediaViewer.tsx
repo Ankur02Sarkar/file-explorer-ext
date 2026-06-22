@@ -8,6 +8,8 @@ import {
   FileText,
   Loader2,
   Music,
+  RotateCcw,
+  RotateCw,
   X,
 } from 'lucide-react';
 
@@ -24,9 +26,37 @@ import { describeType, formatSize, type ExplorerItem } from '@/lib/parser';
 
 const TEXT_PREVIEW_LIMIT = 200 * 1024; // 200 KB cap on text previews.
 
+type Rotation = 0 | 90 | 180 | 270;
+
+function nextRotation(current: Rotation, dir: 'cw' | 'ccw'): Rotation {
+  const steps: Rotation[] = [0, 90, 180, 270];
+  const idx = steps.indexOf(current);
+  if (dir === 'cw') return steps[(idx + 1) % 4];
+  return steps[(idx + 3) % 4]; // +3 mod 4 = −1 mod 4
+}
+
 export function MediaViewer() {
   const { selectedItem, setSelectedItem, mediaItems, cycleMedia } =
     useExplorer();
+
+  const [rotation, setRotation] = React.useState<Rotation>(0);
+
+  // Reset rotation whenever the selected item changes.
+  React.useEffect(() => {
+    setRotation(0);
+  }, [selectedItem?.href]);
+
+  const canRotate =
+    selectedItem?.fileType === 'image' || selectedItem?.fileType === 'video';
+
+  const rotateCw = React.useCallback(
+    () => canRotate && setRotation((r) => nextRotation(r as Rotation, 'cw')),
+    [canRotate],
+  );
+  const rotateCcw = React.useCallback(
+    () => canRotate && setRotation((r) => nextRotation(r as Rotation, 'ccw')),
+    [canRotate],
+  );
 
   React.useEffect(() => {
     if (!selectedItem) return;
@@ -39,11 +69,17 @@ export function MediaViewer() {
         cycleMedia('next');
       } else if (event.key === 'Escape') {
         setSelectedItem(null);
+      } else if (event.key === '[') {
+        event.preventDefault();
+        rotateCcw();
+      } else if (event.key === ']') {
+        event.preventDefault();
+        rotateCw();
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedItem, cycleMedia, setSelectedItem]);
+  }, [selectedItem, cycleMedia, setSelectedItem, rotateCw, rotateCcw]);
 
   if (!selectedItem) return null;
 
@@ -97,6 +133,29 @@ export function MediaViewer() {
               </DialogDescription>
             </div>
             <div className="flex items-center gap-2">
+              {canRotate && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={rotateCcw}
+                    title="Rotate left ([)"
+                    aria-label="Rotate left"
+                  >
+                    <RotateCcw className="size-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={rotateCw}
+                    title="Rotate right (])"
+                    aria-label="Rotate right"
+                  >
+                    <RotateCw className="size-4" />
+                  </Button>
+                  <div className="bg-border h-5 w-px" />
+                </>
+              )}
               <Button
                 variant="outline"
                 size="icon"
@@ -129,7 +188,7 @@ export function MediaViewer() {
         </DialogHeader>
 
         <div className="bg-muted/30 flex flex-1 items-center justify-center overflow-auto p-6">
-          <PreviewSurface item={selectedItem} />
+          <PreviewSurface item={selectedItem} rotation={rotation} />
         </div>
 
         {mediaItems.length > 1 && (
@@ -166,7 +225,25 @@ export function MediaViewer() {
  * an iframe (which Chrome handles natively for PDFs and other MIME types)
  * and finally to a generic file card.
  */
-function PreviewSurface({ item }: { item: ExplorerItem }) {
+function PreviewSurface({
+  item,
+  rotation,
+}: {
+  item: ExplorerItem;
+  rotation: Rotation;
+}) {
+  // When rotated 90/270°, swap the clamping axis so the media fits without
+  // overflowing its container (max-h becomes the limiter for landscape images
+  // that are now portrait, and vice-versa).
+  const isOdd = rotation === 90 || rotation === 270;
+  const rotateStyle: React.CSSProperties = {
+    transform: rotation ? `rotate(${rotation}deg)` : undefined,
+    transition: 'transform 250ms ease',
+    // Swap max-w/max-h when tilted 90/270 so the element doesn't clip.
+    maxWidth: isOdd ? '80vh' : '100%',
+    maxHeight: isOdd ? '80vw' : '100%',
+  };
+
   if (item.type === 'directory') return <DirectoryPreview item={item} />;
 
   switch (item.fileType) {
@@ -175,7 +252,8 @@ function PreviewSurface({ item }: { item: ExplorerItem }) {
         <img
           src={item.href}
           alt={item.name}
-          className="max-h-full max-w-full rounded-lg object-contain shadow-lg"
+          className="rounded-lg object-contain shadow-lg"
+          style={rotateStyle}
         />
       );
     case 'video':
@@ -184,7 +262,8 @@ function PreviewSurface({ item }: { item: ExplorerItem }) {
           src={item.href}
           controls
           autoPlay
-          className="max-h-full max-w-full rounded-lg shadow-lg"
+          className="rounded-lg shadow-lg"
+          style={rotateStyle}
         />
       );
     case 'audio':
