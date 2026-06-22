@@ -91,7 +91,8 @@ jobs:
             2. Open `chrome://extensions` (or `edge://extensions` / `brave://extensions`).
             3. Enable **Developer mode** (toggle in the top-right corner).
             4. Click **Load unpacked** and select the unzipped folder.
-            5. Open the extension **Details** and enable **Allow access to file URLs**.
+            5. **Critical**: Open the extension **Details** and enable **Allow access to file URLs**.
+               > ⚠️ **Required**: Without this, the extension cannot read `file:///` directories and will not work.
             6. Visit any `file:///` directory in your browser — the File Explorer UI will appear automatically.
 
             #### Firefox

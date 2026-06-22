@@ -86,7 +86,8 @@ Pre-built zips for every release are available on the [GitHub Releases page](htt
 3. Open `chrome://extensions` (or `edge://extensions` / `brave://extensions`).
 4. Enable **Developer mode** (toggle in the top-right corner).
 5. Click **Load unpacked** and select the unzipped folder.
-6. Open the extension **Details** (or click the puzzle-piece icon → manage extensions) and enable **Allow access to file URLs**.
+6. **Critical**: Open the extension **Details** (or click the puzzle-piece icon → manage extensions) and enable **Allow access to file URLs**.
+   > ⚠️ **Required**: Without this, the extension cannot read `file:///` directories and will not work.
 7. Visit any `file:///` directory in your browser — the File Explorer UI will appear automatically.
 
 ### Firefox (Manifest V2)
