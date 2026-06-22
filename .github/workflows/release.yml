@@ -1,0 +1,117 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+# Required to create/update GitHub Releases and upload assets.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & publish release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ------------------------------------------------------------------ #
+      # Runtime                                                              #
+      # ------------------------------------------------------------------ #
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # ------------------------------------------------------------------ #
+      # Quality gate                                                         #
+      # ------------------------------------------------------------------ #
+      - name: Type-check
+        run: bun run compile
+
+      # ------------------------------------------------------------------ #
+      # Build & zip both targets                                             #
+      # ------------------------------------------------------------------ #
+      - name: Build & zip Chrome (MV3)
+        run: bun run zip
+
+      - name: Build & zip Firefox (MV2)
+        run: bun run zip:firefox
+
+      # ------------------------------------------------------------------ #
+      # Derive version and artifact paths from package.json                 #
+      # ------------------------------------------------------------------ #
+      - name: Read version
+        id: pkg
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          NAME=$(jq -r '.name' package.json)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "chrome_zip=.output/${NAME}-${VERSION}-chrome.zip" >> "$GITHUB_OUTPUT"
+          echo "firefox_zip=.output/${NAME}-${VERSION}-firefox.zip" >> "$GITHUB_OUTPUT"
+
+      # ------------------------------------------------------------------ #
+      # Verify the zips actually exist before trying to upload              #
+      # ------------------------------------------------------------------ #
+      - name: Verify artifacts
+        run: |
+          ls -lh "${{ steps.pkg.outputs.chrome_zip }}"
+          ls -lh "${{ steps.pkg.outputs.firefox_zip }}"
+
+      # ------------------------------------------------------------------ #
+      # Create / update the GitHub Release                                  #
+      # softprops/action-gh-release handles tag creation and overwrites     #
+      # an existing release with the same tag gracefully.                   #
+      # ------------------------------------------------------------------ #
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.pkg.outputs.tag }}
+          name: File Explorer ${{ steps.pkg.outputs.tag }}
+          overwrite: true
+          body: |
+            ## File Explorer ${{ steps.pkg.outputs.tag }}
+
+            ### Install
+
+            | Browser | Download |
+            |---------|----------|
+            | Chrome / Edge / Brave (MV3) | `file-explorer-ext-${{ steps.pkg.outputs.version }}-chrome.zip` |
+            | Firefox (MV2) | `file-explorer-ext-${{ steps.pkg.outputs.version }}-firefox.zip` |
+
+            #### Chrome / Chromium-based browsers
+            1. Download `file-explorer-ext-${{ steps.pkg.outputs.version }}-chrome.zip` and unzip it.
+            2. Open `chrome://extensions` (or `edge://extensions` / `brave://extensions`).
+            3. Enable **Developer mode** (toggle in the top-right corner).
+            4. Click **Load unpacked** and select the unzipped folder.
+            5. Open the extension **Details** and enable **Allow access to file URLs**.
+            6. Visit any `file:///` directory in your browser — the File Explorer UI will appear automatically.
+
+            #### Firefox
+            1. Download `file-explorer-ext-${{ steps.pkg.outputs.version }}-firefox.zip`.
+            2. Open `about:debugging` → **This Firefox**.
+            3. Click **Load Temporary Add-on** and select the `.zip` file directly.
+            4. Visit any `file:///` directory — the File Explorer UI will appear.
+            > **Note:** Temporary add-ons in Firefox are removed when the browser restarts. For a persistent install, the extension would need to be signed by Mozilla.
+
+            ### Keyboard shortcuts
+            | Shortcut | Action |
+            |----------|--------|
+            | `Alt+Shift+F` | Open / toggle File Explorer |
+            | `Ctrl+F` | Focus search |
+            | `Esc` | Clear search / close preview |
+            | `G` / `L` | Grid / List view |
+            | `1`–`9` | Quick filter by type |
+            | `←` / `→` | Previous / next media in viewer |
+            | `[` / `]` | Rotate image/video left / right |
+            | `Shift+?` | Show keyboard shortcuts |
+          files: |
+            ${{ steps.pkg.outputs.chrome_zip }}
+            ${{ steps.pkg.outputs.firefox_zip }}
