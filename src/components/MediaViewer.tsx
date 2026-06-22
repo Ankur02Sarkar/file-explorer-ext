@@ -225,6 +225,79 @@ export function MediaViewer() {
  * an iframe (which Chrome handles natively for PDFs and other MIME types)
  * and finally to a generic file card.
  */
+/**
+ * Wraps rotatable media (image / video) so the layout box always matches the
+ * visual footprint after rotation.
+ *
+ * Problem: CSS `transform: rotate()` rotates visually but leaves the element's
+ * layout box unchanged. A portrait image rotated 90° looks landscape but the
+ * browser still reserves portrait space — the parent flex container sizes to
+ * that original box and the rotated image overflows / gets clipped.
+ *
+ * Solution: a wrapper div whose layout dimensions are already the *swapped*
+ * values (width ↔ height constrained axes) so the flex parent accounts for
+ * the correct footprint. The media inside fills the wrapper 100%×100% and is
+ * then visually rotated in-place — no clipping.
+ */
+function RotatableWrapper({
+  rotation,
+  children,
+}: {
+  rotation: Rotation;
+  children: React.ReactNode;
+}) {
+  const isOdd = rotation === 90 || rotation === 270;
+
+  // At 0°/180° the element fits inside the container normally.
+  // At 90°/270° the visual width = original height, visual height = original width.
+  // We constrain the wrapper using the *opposite* viewport axis so the rotated
+  // media never exceeds the available space on either side.
+  const wrapperStyle: React.CSSProperties = isOdd
+    ? {
+        // visual width (= original height) must not exceed the container height
+        maxWidth: 'min(calc(80vh - 80px), 100%)',
+        // visual height (= original width) must not exceed the container width
+        maxHeight: 'min(80vw, 100%)',
+        width: 'min(calc(80vh - 80px), 100%)',
+        height: 'min(80vw, 100%)',
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }
+    : {
+        maxWidth: '100%',
+        maxHeight: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      };
+
+  const mediaStyle: React.CSSProperties = {
+    // Fill the wrapper so the rotate happens inside a correctly-sized box.
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
+    transform: rotation ? `rotate(${rotation}deg)` : undefined,
+    transition: 'transform 250ms ease',
+    borderRadius: '0.5rem',
+    boxShadow: '0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1)',
+  };
+
+  return (
+    <div style={wrapperStyle}>
+      {React.isValidElement(children)
+        ? React.cloneElement(children as React.ReactElement<{ style?: React.CSSProperties }>, {
+            style: {
+              ...(children as React.ReactElement<{ style?: React.CSSProperties }>).props.style,
+              ...mediaStyle,
+            },
+          })
+        : children}
+    </div>
+  );
+}
+
 function PreviewSurface({
   item,
   rotation,
@@ -232,39 +305,27 @@ function PreviewSurface({
   item: ExplorerItem;
   rotation: Rotation;
 }) {
-  // When rotated 90/270°, swap the clamping axis so the media fits without
-  // overflowing its container (max-h becomes the limiter for landscape images
-  // that are now portrait, and vice-versa).
-  const isOdd = rotation === 90 || rotation === 270;
-  const rotateStyle: React.CSSProperties = {
-    transform: rotation ? `rotate(${rotation}deg)` : undefined,
-    transition: 'transform 250ms ease',
-    // Swap max-w/max-h when tilted 90/270 so the element doesn't clip.
-    maxWidth: isOdd ? '80vh' : '100%',
-    maxHeight: isOdd ? '80vw' : '100%',
-  };
-
   if (item.type === 'directory') return <DirectoryPreview item={item} />;
 
   switch (item.fileType) {
     case 'image':
       return (
-        <img
-          src={item.href}
-          alt={item.name}
-          className="rounded-lg object-contain shadow-lg"
-          style={rotateStyle}
-        />
+        <RotatableWrapper rotation={rotation}>
+          <img
+            src={item.href}
+            alt={item.name}
+          />
+        </RotatableWrapper>
       );
     case 'video':
       return (
-        <video
-          src={item.href}
-          controls
-          autoPlay
-          className="rounded-lg shadow-lg"
-          style={rotateStyle}
-        />
+        <RotatableWrapper rotation={rotation}>
+          <video
+            src={item.href}
+            controls
+            autoPlay
+          />
+        </RotatableWrapper>
       );
     case 'audio':
       return <AudioPreview item={item} />;
