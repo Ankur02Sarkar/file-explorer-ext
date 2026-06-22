@@ -75,11 +75,41 @@ bun run zip          # packaged .zip for the Chrome Web Store
 bun run compile      # type-check
 ```
 
-## Loading in Chrome
+## Install from GitHub Releases (recommended)
 
-1. `bun run build`
-2. Open `chrome://extensions`
-3. Enable **Developer mode**
-4. Click **Load unpacked** and select `.output/chrome-mv3/`
-5. Visit any `file:///` directory in Chrome
-6. If prompted, open **Details** for the extension and enable **Allow access to file URLs**
+Pre-built zips for every release are available on the [GitHub Releases page](https://github.com/Ankur02Sarkar/file-explorer-ext/releases).
+
+### Chrome / Edge / Brave (Manifest V3)
+
+1. Go to the latest release and download `file-explorer-ext-{version}-chrome.zip`.
+2. Unzip the file — you'll get a folder like `file-explorer-ext-1.0.0-chrome/`.
+3. Open `chrome://extensions` (or `edge://extensions` / `brave://extensions`).
+4. Enable **Developer mode** (toggle in the top-right corner).
+5. Click **Load unpacked** and select the unzipped folder.
+6. Open the extension **Details** (or click the puzzle-piece icon → manage extensions) and enable **Allow access to file URLs**.
+7. Visit any `file:///` directory in your browser — the File Explorer UI will appear automatically.
+
+### Firefox (Manifest V2)
+
+> Firefox requires a signed extension for permanent installation. The provided build is a temporary add-on that loads until you restart Firefox.
+
+1. Go to the latest release and download `file-explorer-ext-{version}-firefox.zip` (keep it zipped).
+2. Open `about:debugging` → **This Firefox**.
+3. Click **Load Temporary Add-on** and select the downloaded `.zip` file directly.
+4. Visit any `file:///` directory — the File Explorer UI will appear.
+5. To keep it across restarts, the extension would need to be submitted to and signed by Mozilla AMO (not yet done).
+
+---
+
+## Loading from source (for developers)
+
+If you prefer to build yourself:
+
+```bash
+bun install
+bun run build          # → .output/chrome-mv3/
+bun run zip            # → .output/file-explorer-ext-{version}-chrome.zip
+bun run zip:firefox    # → .output/file-explorer-ext-{version}-firefox.zip
+```
+
+Then follow the same installation steps above using the generated folders/zips.
