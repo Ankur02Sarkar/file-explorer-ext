@@ -32,7 +32,9 @@ export function Header({ segments, onShowShortcuts, onDismiss }: HeaderProps) {
   const crumbs = [
     { name: 'Home', href: baseHref + '/', isHome: true },
     ...segments.map((seg, i) => ({
-      name: seg,
+      // Segments come from url.pathname which is percent-encoded.
+      // decodeURIComponent turns 'client%20level%20packages' → 'client level packages'.
+      name: (() => { try { return decodeURIComponent(seg); } catch { return seg; } })(),
       href:
         baseHref + '/' + segments.slice(0, i + 1).join('/') + (i < segments.length - 1 ? '/' : ''),
       isHome: false,

@@ -52,7 +52,18 @@
   --color-archive: var(--archive);
 }
 
-:root {
+/* ----------------------------------------------------------------------
+   IMPORTANT: This CSS is injected as a <style> tag inside a Shadow DOM.
+   Inside a shadow stylesheet, ':root' does NOT match any element because
+   shadow trees are not documents (they have no root element). We must use
+   ':host' instead — it targets the shadow host element from inside the
+   shadow stylesheet, and CSS custom properties then inherit down to all
+   shadow-tree children.  We keep ':root' as a secondary selector so the
+   same stylesheet works if ever used outside a shadow root (e.g. the
+   file-access-help page).
+   ---------------------------------------------------------------------- */
+:root,
+:host {
   --radius: 0.65rem;
 
   /* Background: very slightly off-white so cards can float above it */
@@ -104,6 +115,11 @@
   --archive-border: oklch(0.9 0.04 85);
 }
 
+/* Dark mode: ThemeProvider adds 'dark' class to <html> (document root, outside the
+   shadow root). We use :host-context(.dark) to detect that ancestor from inside the
+   shadow stylesheet. :root.dark / .dark are kept as fallbacks for non-shadow contexts. */
+:host-context(.dark),
+:root.dark,
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
