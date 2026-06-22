@@ -219,19 +219,19 @@ export function parseDirectoryListing(): ExplorerItem[] {
     if (rows.length === 0) return [];
 
     let headerMap = headRow
-      ? parseHeaderRow(headRow)
+      ? parseHeaderRow(headRow as HTMLTableRowElement)
       : ({} as Record<number, string>);
 
     // Heuristic: Chrome's native file:// listing has an empty header row
     // but consistent column order: [name, size, modified]. Detect by
     // looking at the first body row's cell count + content.
     if (Object.keys(headerMap).length === 0) {
-      headerMap = inferColumnOrder(rows[0]);
+      headerMap = inferColumnOrder(rows[0] as HTMLTableRowElement);
     }
 
     const startIdx = headRow && !bodyRows.length ? 1 : 0;
     for (let i = startIdx; i < rows.length; i++) {
-      const parsed = parseBodyRow(rows[i], headerMap, baseHref);
+      const parsed = parseBodyRow(rows[i] as HTMLTableRowElement, headerMap, baseHref);
       if (parsed) items.push(parsed);
     }
   } else {

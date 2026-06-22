@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
+import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 
 /**
@@ -46,6 +47,22 @@ export function ShadowDialogPortal({
     <DialogPrimitive.Portal container={container} {...props}>
       {children}
     </DialogPrimitive.Portal>
+  );
+}
+
+/**
+ * Drop-in replacement for `DropdownMenuPrimitive.Portal` that renders inside
+ * the shadow root when available.
+ */
+export function ShadowDropdownPortal({
+  children,
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Portal>) {
+  const container = usePortalContainer();
+  return (
+    <DropdownMenuPrimitive.Portal container={container} {...props}>
+      {children}
+    </DropdownMenuPrimitive.Portal>
   );
 }
 

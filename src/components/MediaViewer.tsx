@@ -128,7 +128,7 @@ export function MediaViewer() {
           </div>
         </DialogHeader>
 
-        <div className="bg-muted/20 flex flex-1 items-center justify-center overflow-auto p-6">
+        <div className="bg-muted/30 flex flex-1 items-center justify-center overflow-auto p-6">
           <PreviewSurface item={selectedItem} />
         </div>
 

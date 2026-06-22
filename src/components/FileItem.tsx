@@ -26,7 +26,7 @@ export function FileCard({ item }: FileCardProps) {
   };
 
   return (
-    <div className="bg-background hover:border-primary/50 group flex flex-col overflow-hidden rounded-lg border border-border transition-all duration-200 hover:scale-[1.02] hover:shadow-lg">
+    <div className="bg-card hover:border-primary/40 group flex flex-col overflow-hidden rounded-xl border border-border shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md">
       <div className="relative cursor-pointer p-4" onClick={onCardClick}>
         {item.fileType === 'image' ? (
           thumbnails.images ? (
@@ -190,8 +190,7 @@ export function FileRow({ item }: { item: ExplorerItem }) {
         }
       }}
       className={cn(
-        'group hover:bg-muted/50 hover:border-primary/50 grid cursor-pointer grid-cols-[48px_1fr_auto_120px] items-center gap-4 rounded-lg border border-border px-4 py-3 transition-all duration-200 hover:shadow-md',
-        badge.border,
+        'group bg-card hover:bg-muted/20 hover:border-primary/40 grid cursor-pointer grid-cols-[48px_1fr_auto_120px] items-center gap-4 rounded-xl border border-border px-4 py-3 shadow-sm transition-all duration-200 hover:shadow-md',
       )}
     >
       <div

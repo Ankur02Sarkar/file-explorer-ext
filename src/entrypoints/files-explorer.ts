@@ -18,7 +18,26 @@ export default defineUnlistedScript(() => {
   mountShadowRoot();
 });
 
+function injectGoogleFont() {
+  // The Tailwind CSS is injected as an inline <style> inside the shadow root.
+  // Shadow DOM <style> blocks cannot trigger external @import url() requests,
+  // so the Google Fonts @import inside tailwind.css never fires and the browser
+  // falls back to the system font. Injecting a <link> into the main document
+  // <head> (outside the shadow root) loads the font face globally so the
+  // shadow root can consume it via var(--font-sans).
+  const FONT_HREF =
+    'https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap';
+  if (!document.head.querySelector(`link[href="${FONT_HREF}"]`)) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = FONT_HREF;
+    document.head.appendChild(link);
+  }
+}
+
 function mountShadowRoot() {
+  injectGoogleFont();
+
   // Hide the native Chrome directory listing so we don't show two views at
   // once. The dismiss button restores it.
   const nativeElements: Element[] = [];
@@ -84,8 +103,7 @@ function mountShadowRoot() {
   root.render(
     React.createElement(
       ShadowPortalProvider,
-      { value: portalRoot },
-      React.createElement(
+      { value: portalRoot, children: React.createElement(
         React.StrictMode,
         null,
         React.createElement(
@@ -97,7 +115,7 @@ function mountShadowRoot() {
             React.createElement(Home),
           ),
         ),
-      ),
+      ) },
     ),
   );
 }

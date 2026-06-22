@@ -1,6 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
+/* Note: Outfit font is loaded via a <link> injected into document.head
+   (see files-explorer.ts → injectGoogleFont). Shadow DOM <style> blocks
+   cannot trigger external @import url() requests, so we inject it outside
+   the shadow root where the browser can fetch it normally. */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -52,8 +55,10 @@
 :root {
   --radius: 0.65rem;
 
-  --background: oklch(1 0 0);
+  /* Background: very slightly off-white so cards can float above it */
+  --background: oklch(0.975 0.002 240);
   --foreground: oklch(0.145 0 0);
+  /* Card: pure white — sits above the background for visual depth */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -149,8 +154,10 @@
   * {
     @apply border-border;
   }
+  /* Apply font globally AND inside shadow root (:host targets the shadow host). */
   html,
-  body {
+  body,
+  :host {
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
