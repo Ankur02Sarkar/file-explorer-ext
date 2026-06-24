@@ -2,7 +2,7 @@
   "name": "file-explorer-ext",
   "description": "Browse local directories with search, filters, image/video previews, grid/list views, and shortcuts. Fully local, no server calls.",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "scripts": {
     "dev": "wxt",
