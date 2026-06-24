@@ -9,7 +9,7 @@ export default defineConfig({
   manifest: {
     name: 'File Explorer',
     description:
-      'Transform local file:// directories into a visual file browser — search, filter, preview images & videos, grid/list views, and keyboard shortcuts. All processing is local; no data is sent anywhere.',
+      'Browse local directories with search, filters, image/video previews, grid/list views, and shortcuts. Fully local, no server calls.',
     permissions: ['storage', 'activeTab', 'scripting'],
     host_permissions: ['file://*/*'],
     action: {
