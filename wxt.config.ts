@@ -7,20 +7,20 @@ export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   srcDir: 'src',
   manifest: {
-    name: 'File Explorer',
+    name: 'File Explorer Pro',
     description:
       'Browse local directories with search, filters, image/video previews, grid/list views, and shortcuts. Fully local, no server calls.',
     permissions: ['storage', 'activeTab', 'scripting'],
     host_permissions: ['file://*/*'],
     action: {
-      default_title: 'File Explorer',
+      default_title: 'File Explorer Pro',
     },
     commands: {
       _execute_action: {
         suggested_key: {
           default: 'Alt+Shift+F',
         },
-        description: 'Open File Explorer',
+        description: 'Open File Explorer Pro',
       },
     },
   },
